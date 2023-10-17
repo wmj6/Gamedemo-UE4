@@ -2,8 +2,11 @@
 
 
 #include "SCharacter.h"
+
+#include "SInteractionComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -13,10 +16,15 @@ ASCharacter::ASCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->SetupAttachment(RootComponent);
-
+	
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
+
+	InteractionComp = CreateDefaultSubobject<USInteractionComponent>(TEXT("InteractionComp"));
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
 // Called when the game starts or when spawned
@@ -28,7 +36,47 @@ void ASCharacter::BeginPlay()
 
 void ASCharacter::MoveForward(float value)
 {
-	AddMovementInput(GetActorForwardVector(), value);
+	FRotator controlRotation = GetControlRotation();
+	controlRotation.Pitch = 0.0f;
+	controlRotation.Roll = 0.0f;
+	AddMovementInput(controlRotation.Vector(), value);
+}
+
+void ASCharacter::MoveRight(float value)
+{
+	FRotator controlRotation = GetControlRotation();
+	controlRotation.Pitch = 0.0f;
+	controlRotation.Roll = 0.0f;
+	const FVector rightVector = FRotationMatrix(controlRotation).GetScaledAxis(EAxis::Y);
+	AddMovementInput(rightVector, value);
+}
+
+void ASCharacter::SecondarySkill()
+{
+	PlayAnimMontage(SecondarySkillAnim);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_SecondarySkill,this,&ASCharacter::SecondarySkill_TimeElapsed,0.2f);
+	
+}
+
+void ASCharacter::SecondarySkill_TimeElapsed()
+{
+	FVector fireLocation = GetMesh()->GetSocketLocation(TEXT("Muzzle_01"));
+	FTransform SpawnTM = GetActorTransform();
+	SpawnTM.SetLocation(fireLocation);
+	FActorSpawnParameters SpawnParames;
+	SpawnParames.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	GetWorld()->SpawnActor<AActor>(magicProjecttile,SpawnTM,SpawnParames);
+}
+
+void ASCharacter::Interact()
+{
+	if(!IsValid(InteractionComp))
+	{
+		UE_LOG(LogTemp,Warning,TEXT("InteractionComp is null pointer"))
+		return ;
+	}
+	InteractionComp->PrimaryInteract();
 }
 
 // Called every frame
@@ -43,7 +91,12 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	PlayerInputComponent->BindAxis("MoveForward", this,&ASCharacter::MoveForward);
-
+	PlayerInputComponent->BindAxis("MoveRight",this,&ASCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn", this,&APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this,&APawn::AddControllerPitchInput);
+
+	PlayerInputComponent->BindAction("SecondarySkill",IE_Pressed, this,&ASCharacter::SecondarySkill);
+	PlayerInputComponent->BindAction("Jump",IE_Pressed,this,&ACharacter::Jump);
+	PlayerInputComponent->BindAction("Interact",IE_Pressed,this,&ASCharacter::Interact);
 }
 
