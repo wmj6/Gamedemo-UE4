@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "SCharacter.generated.h"
 
+class USAttributeComponent;
 class USInteractionComponent;
 class UCameraComponent;
 class USpringArmComponent;
@@ -15,7 +16,9 @@ class GAMEDEMOUE4_API ASCharacter : public ACharacter
 	GENERATED_BODY()
 protected:
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<AActor> magicProjecttile;
+		TSubclassOf<AActor> magicProjectile;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AActor> blackHoleProjectile;
 	UPROPERTY(EditAnywhere)
 		UAnimMontage* SecondarySkillAnim;
 	FTimerHandle TimerHandle_SecondarySkill;
@@ -32,6 +35,9 @@ protected:
 	void SecondarySkill();
 	void SecondarySkill_TimeElapsed();
 	void Interact();
+	void PrimarySkill();
+	UFUNCTION()
+	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth,float Delta);
 	
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComp;
@@ -40,11 +46,15 @@ protected:
 	USpringArmComponent* SpringArmComp;
 	UPROPERTY(VisibleAnywhere)
 	USInteractionComponent* InteractionComp;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	USAttributeComponent* AttributeComp;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
 	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void PostInitializeComponents() override;
 };

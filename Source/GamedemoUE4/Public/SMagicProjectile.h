@@ -3,14 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SProjectileBase.h"
 #include "GameFramework/Actor.h"
 #include "SMagicProjectile.generated.h"
 
-class UProjectileMovementComponent;
-class USphereComponent;
-
 UCLASS()
-class GAMEDEMOUE4_API ASMagicProjectile : public AActor
+class GAMEDEMOUE4_API ASMagicProjectile : public ASProjectileBase
 {
 	GENERATED_BODY()
 	
@@ -21,13 +19,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	
-	UPROPERTY(VisibleAnywhere)
-		USphereComponent* SphereComp;
-	UPROPERTY(VisibleAnywhere)
-		UProjectileMovementComponent* MovementComp;
-	UPROPERTY(VisibleAnywhere)
-		UParticleSystemComponent* EffectComp;
+	virtual void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

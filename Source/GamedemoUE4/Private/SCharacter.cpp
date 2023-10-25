@@ -3,11 +3,11 @@
 
 #include "SCharacter.h"
 
+#include "SAttributeComponent.h"
 #include "SInteractionComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -23,8 +23,17 @@ ASCharacter::ASCharacter()
 	CameraComp->SetupAttachment(SpringArmComp);
 
 	InteractionComp = CreateDefaultSubobject<USInteractionComponent>(TEXT("InteractionComp"));
+
+	AttributeComp = CreateDefaultSubobject<USAttributeComponent>(TEXT("AttributeComp"));
+	
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+}
+
+void ASCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	AttributeComp->OnHealthChanged.AddDynamic(this,&ASCharacter::OnHealthChanged);
 }
 
 // Called when the game starts or when spawned
@@ -64,9 +73,11 @@ void ASCharacter::SecondarySkill_TimeElapsed()
 	FVector fireLocation = GetMesh()->GetSocketLocation(TEXT("Muzzle_01"));
 	FTransform SpawnTM = GetActorTransform();
 	SpawnTM.SetLocation(fireLocation);
+	SpawnTM.SetRotation(GetControlRotation().Quaternion());
 	FActorSpawnParameters SpawnParames;
 	SpawnParames.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	GetWorld()->SpawnActor<AActor>(magicProjecttile,SpawnTM,SpawnParames);
+	SpawnParames.Instigator = this;
+	GetWorld()->SpawnActor<AActor>(magicProjectile,SpawnTM,SpawnParames);
 }
 
 void ASCharacter::Interact()
@@ -77,6 +88,28 @@ void ASCharacter::Interact()
 		return ;
 	}
 	InteractionComp->PrimaryInteract();
+}
+
+void ASCharacter::PrimarySkill()
+{
+	PlayAnimMontage(SecondarySkillAnim);
+	FVector fireLocation = GetMesh()->GetSocketLocation(TEXT("Muzzle_01"));
+	FTransform SpawnTM = GetActorTransform();
+	SpawnTM.SetLocation(fireLocation);
+	SpawnTM.SetRotation(GetControlRotation().Quaternion());
+	FActorSpawnParameters SpawnParames;
+	SpawnParames.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParames.Instigator = this;
+	GetWorld()->SpawnActor<AActor>(blackHoleProjectile,SpawnTM,SpawnParames);
+}
+
+void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth,
+	float Delta)
+{
+	if( NewHealth<=0.0f && Delta<0.0f)
+	{
+		DisableInput(Cast<APlayerController>(GetController()));
+	}
 }
 
 // Called every frame
@@ -96,7 +129,9 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAxis("LookUp", this,&APawn::AddControllerPitchInput);
 
 	PlayerInputComponent->BindAction("SecondarySkill",IE_Pressed, this,&ASCharacter::SecondarySkill);
+	PlayerInputComponent->BindAction("PrimarySkill",IE_Pressed, this,&ASCharacter::PrimarySkill);
 	PlayerInputComponent->BindAction("Jump",IE_Pressed,this,&ACharacter::Jump);
 	PlayerInputComponent->BindAction("Interact",IE_Pressed,this,&ASCharacter::Interact);
 }
+
 
