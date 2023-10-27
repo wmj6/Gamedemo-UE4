@@ -29,11 +29,14 @@ protected:
 	UProjectileMovementComponent* MovementComp;
 	UPROPERTY(VisibleAnywhere)
 	UParticleSystemComponent* EffectComp;
+	UPROPERTY(VisibleAnywhere)
+	UAudioComponent* AudioComp;
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UParticleSystem* ImpactVFX;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	USoundCue* ImpactSound;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Effects|Shake")
 	TSubclassOf<UCameraShakeBase> ImpactShake;
 

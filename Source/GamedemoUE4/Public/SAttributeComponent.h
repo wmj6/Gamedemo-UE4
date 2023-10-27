@@ -19,6 +19,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = "Attribute")
 		float Health;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = "Attribute")
+		float HealthMax;
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChanged OnHealthChanged;
