@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "SAICharacter.generated.h"
 
+class UPawnSensingComponent;
+
 UCLASS()
 class GAMEDEMOUE4_API ASAICharacter : public ACharacter
 {
@@ -19,7 +21,15 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+protected:
+	UPROPERTY()
+		UPawnSensingComponent* SensingComp;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
+	virtual void PostInitializeComponents() override;
+	
+	UFUNCTION()
+	 void OnSeePawn(APawn* Pawn);
 };
