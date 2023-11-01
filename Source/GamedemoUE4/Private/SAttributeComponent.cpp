@@ -21,3 +21,8 @@ bool USAttributeComponent::IsAlive()
 	return Health>0.0f;
 }
 
+bool USAttributeComponent::IsFullHealth()
+{
+	return Health==HealthMax;
+}
+

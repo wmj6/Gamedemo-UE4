@@ -31,4 +31,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		bool IsAlive();
+
+	UFUNCTION(BlueprintCallable)
+		bool IsFullHealth();
 };

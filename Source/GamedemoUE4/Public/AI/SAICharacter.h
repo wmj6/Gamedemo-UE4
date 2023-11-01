@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "SAICharacter.generated.h"
 
+class USAttributeComponent;
 class UPawnSensingComponent;
 
 UCLASS()
@@ -24,6 +25,8 @@ protected:
 protected:
 	UPROPERTY()
 		UPawnSensingComponent* SensingComp;
+	UPROPERTY()
+		USAttributeComponent* AttributeComp;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
