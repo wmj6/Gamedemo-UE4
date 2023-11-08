@@ -47,11 +47,11 @@ void ASProjectileBase::Tick(float DeltaTime)
 void ASProjectileBase::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
-	if(OtherActor == GetInstigator())
+	/*if(OtherActor == GetInstigator())
 	{
 		return ;
-	}
-	Explode();
+	}*/
+	
 }
 
 void ASProjectileBase::Explode_Implementation()

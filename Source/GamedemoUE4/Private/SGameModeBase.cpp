@@ -5,8 +5,11 @@
 
 #include "EngineUtils.h"
 #include "SAttributeComponent.h"
+#include "SCharacter.h"
 #include "AI/SAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
+
+static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
 
 ASGameModeBase::ASGameModeBase()
 {
@@ -32,6 +35,12 @@ void ASGameModeBase::Execute_SpawnEQS()
 void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance,
 	EEnvQueryStatus::Type QueryStatus)
 {
+	if(!CVarSpawnBots.GetValueOnGameThread())
+	{
+		UE_LOG(LogTemp,Warning, TEXT("Bot spawning disabled via cvar 'CVarSpawnBots'."));
+		return ;
+	}
+	
 	if(QueryStatus != EEnvQueryStatus::Success)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("EQS Failed"));
@@ -42,7 +51,7 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 	for(TActorIterator<ASAICharacter> It(GetWorld());It;++It)
 	{
 		ASAICharacter* AICharacter = *It;
-		USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(AICharacter->GetComponentByClass(USAttributeComponent::StaticClass()));
+		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributeComponent(AICharacter);
 		if(AttributeComp && AttributeComp->IsAlive())
 		{
 			++Botnum;
@@ -61,5 +70,36 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 	if(Locations.Num()>0)
 	{
 		GetWorld()->SpawnActor<AActor>(MinionClass,Locations[0],FRotator::ZeroRotator);
+	}
+}
+
+void ASGameModeBase::WhoIsYourDaddy()
+{
+	for(TActorIterator<ASAICharacter> It(GetWorld());It;++It)
+	{
+		ASAICharacter* AI = *It;
+		if(USAttributeComponent::IsActorAlive(AI))
+		{
+			AI->Destroy();
+		}
+	}
+}
+
+void ASGameModeBase::OnActorKill(AActor* VictimActor, AActor* Killer)
+{
+	ASCharacter* Player = Cast<ASCharacter>(VictimActor);
+	if(Player)
+	{
+		FTimerHandle TimerHandle_RespawnDelay;
+		auto RespawnPlayer = [=]
+		{
+			AController* Controller = Player->GetController();
+			if(ensure(Controller))
+			{
+				Controller->UnPossess();
+				RestartPlayer(Controller);
+			}
+		};
+		GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay,RespawnPlayer,10.0f,false);
 	}
 }

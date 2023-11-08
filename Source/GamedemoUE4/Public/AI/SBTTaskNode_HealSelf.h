@@ -4,20 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "SBTTask_RangedAttack.generated.h"
+#include "SBTTaskNode_HealSelf.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GAMEDEMOUE4_API USBTTask_RangedAttack : public UBTTaskNode
+class GAMEDEMOUE4_API USBTTaskNode_HealSelf : public UBTTaskNode
 {
 	GENERATED_BODY()
-protected:
-	UPROPERTY(EditAnywhere, Category = "AI")
-			TSubclassOf<AActor> ProjectileClass;
-	UPROPERTY(EditAnywhere, Category="AI")
-			float AimOffset;
-public:
+private:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };

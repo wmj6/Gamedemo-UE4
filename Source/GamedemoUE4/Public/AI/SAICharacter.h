@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "SAICharacter.generated.h"
 
+class USWorldUserWidget;
 class USAttributeComponent;
 class UPawnSensingComponent;
 
@@ -23,10 +24,16 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 		UPawnSensingComponent* SensingComp;
 	UPROPERTY()
 		USAttributeComponent* AttributeComp;
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<USWorldUserWidget> HealthBarWidgetClass;
+	UPROPERTY()
+		USWorldUserWidget* ActiveHealthBarWidget;
+
+	FTimerHandle TimerHandle_RemoveHealthBar;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -34,5 +41,9 @@ public:
 	virtual void PostInitializeComponents() override;
 	
 	UFUNCTION()
-	 void OnSeePawn(APawn* Pawn);
+		void OnSeePawn(APawn* Pawn);
+	UFUNCTION()
+		void OnHealthChange(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth,float Delta);
+	UFUNCTION()
+		void SetAimTarget(AActor* NewTarget);
 };

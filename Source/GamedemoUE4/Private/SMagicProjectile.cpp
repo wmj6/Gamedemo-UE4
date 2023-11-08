@@ -4,6 +4,7 @@
 #include "SMagicProjectile.h"
 
 #include "SAttributeComponent.h"
+#include "SGameplayFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 
 // Sets default values
@@ -24,15 +25,17 @@ void ASMagicProjectile::BeginPlay()
 void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	Super::OnActorHit(HitComponent, OtherActor, OtherComp, NormalImpulse, Hit);
-	
+	//Super::OnActorHit(HitComponent, OtherActor, OtherComp, NormalImpulse, Hit);
+	Explode();
 	if(OtherActor && OtherActor!=GetInstigator())
 	{
-		USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
+		/*USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributeComponent(OtherActor);
 		if(AttributeComp)
 		{
-			AttributeComp->ApplyHealthChange(-20.0f);
-		}
+			AttributeComp->ApplyHealthChange(GetInstigator(),-20.0f);
+		}*/
+		bool result = USGameplayFunctionLibrary::ApplyDirectionDamage(GetInstigator(),OtherActor,-20.0f,Hit);
+		UE_LOG(LogTemp,Warning,TEXT("%d"),result);
 	}
 }
 

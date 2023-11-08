@@ -20,6 +20,10 @@ public:
 	ASGameModeBase();
 	virtual void StartPlay() override;
 
+	UFUNCTION(Exec)
+		void WhoIsYourDaddy();
+	UFUNCTION()
+		virtual void OnActorKill(AActor* VictimActor,AActor* Killer);
 protected:
 	FTimerHandle TimerHandle_ExeEQS;
 
@@ -36,4 +40,6 @@ protected:
 
 	UFUNCTION()
 		void OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+
+	
 };

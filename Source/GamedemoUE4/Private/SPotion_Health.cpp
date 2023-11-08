@@ -22,10 +22,10 @@ void ASPotion_Health::Interact_Implementation(APawn* InstigatorPawn)
 {
 	if(ensure(InstigatorPawn))
 	{
-		USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(InstigatorPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
+		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributeComponent(InstigatorPawn);
 		if(ensure(AttributeComp) && !AttributeComp->IsFullHealth())
 		{
-			AttributeComp->ApplyHealthChange(20);
+			AttributeComp->ApplyHealthChange(InstigatorPawn,20);
 			Destroy();
 		}
 	}

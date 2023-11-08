@@ -25,13 +25,17 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChanged OnHealthChanged;
-public:	
+public:
+	UFUNCTION(BlueprintCallable)
+		static USAttributeComponent* GetAttributeComponent(AActor* FromActor);
+	UFUNCTION(BlueprintCallable)
+	static bool IsActorAlive(AActor* FromActor);
+	
 	UFUNCTION(BlueprintCallable,Category = "Attribte")
-	bool ApplyHealthChange(float Delta);
-
+		bool ApplyHealthChange(AActor* Instigator, float Delta);
+	
 	UFUNCTION(BlueprintCallable)
 		bool IsAlive();
-
 	UFUNCTION(BlueprintCallable)
 		bool IsFullHealth();
 };
