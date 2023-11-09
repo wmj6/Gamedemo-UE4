@@ -9,9 +9,15 @@ void ASPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	
+	
+}
+
+void ASPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
 	if(ensure(MainHUD))
 	{
 		CreateWidget(this,MainHUD)->AddToViewport();
 	}
-	
 }

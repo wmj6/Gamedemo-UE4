@@ -3,6 +3,7 @@
 
 #include "SCharacter.h"
 
+#include "SActionComponent.h"
 #include "SAttributeComponent.h"
 #include "SInteractionComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -25,6 +26,8 @@ ASCharacter::ASCharacter()
 	InteractionComp = CreateDefaultSubobject<USInteractionComponent>(TEXT("InteractionComp"));
 
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>(TEXT("AttributeComp"));
+
+	ActionComp = CreateDefaultSubobject<USActionComponent>(TEXT("ActionComp"));
 	
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -34,6 +37,11 @@ void ASCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	AttributeComp->OnHealthChanged.AddDynamic(this,&ASCharacter::OnHealthChanged);
+}
+
+FVector ASCharacter::GetPawnViewLocation() const
+{
+	return CameraComp->GetComponentLocation();
 }
 
 // Called when the game starts or when spawned
@@ -62,22 +70,7 @@ void ASCharacter::MoveRight(float value)
 
 void ASCharacter::SecondarySkill()
 {
-	PlayAnimMontage(SecondarySkillAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_SecondarySkill,this,&ASCharacter::SecondarySkill_TimeElapsed,0.2f);
-	
-}
-
-void ASCharacter::SecondarySkill_TimeElapsed()
-{
-	FVector fireLocation = GetMesh()->GetSocketLocation(TEXT("Muzzle_01"));
-	FTransform SpawnTM = GetActorTransform();
-	SpawnTM.SetLocation(fireLocation);
-	SpawnTM.SetRotation(GetControlRotation().Quaternion());
-	FActorSpawnParameters SpawnParames;
-	SpawnParames.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParames.Instigator = this;
-	GetWorld()->SpawnActor<AActor>(magicProjectile,SpawnTM,SpawnParames);
+	ActionComp->StartActionByName(this,"ProjectileAttack");
 }
 
 void ASCharacter::Interact()
@@ -92,19 +85,21 @@ void ASCharacter::Interact()
 
 void ASCharacter::PrimarySkill()
 {
-	PlayAnimMontage(SecondarySkillAnim);
-	FVector fireLocation = GetMesh()->GetSocketLocation(TEXT("Muzzle_01"));
-	FTransform SpawnTM = GetActorTransform();
-	SpawnTM.SetLocation(fireLocation);
-	SpawnTM.SetRotation(GetControlRotation().Quaternion());
-	FActorSpawnParameters SpawnParames;
-	SpawnParames.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParames.Instigator = this;
-	GetWorld()->SpawnActor<AActor>(blackHoleProjectile,SpawnTM,SpawnParames);
+	ActionComp->StartActionByName(this,"Blackhole");
+}
+
+void ASCharacter::SprintStart()
+{
+	ActionComp->StartActionByName(this,"Sprint");
+}
+
+void ASCharacter::SprintStop()
+{
+	ActionComp->StopActionByName(this,"Sprint");
 }
 
 void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth,
-	float Delta)
+                                  float Delta)
 {
 	GetMesh()->SetScalarParameterValueOnMaterials("Time",GetWorld()->GetTimeSeconds());
 	if( NewHealth<=0.0f && Delta<0.0f)
@@ -133,6 +128,8 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("PrimarySkill",IE_Pressed, this,&ASCharacter::PrimarySkill);
 	PlayerInputComponent->BindAction("Jump",IE_Pressed,this,&ACharacter::Jump);
 	PlayerInputComponent->BindAction("Interact",IE_Pressed,this,&ASCharacter::Interact);
+	PlayerInputComponent->BindAction("Sprint",IE_Pressed,this,&ASCharacter::SprintStart);
+	PlayerInputComponent->BindAction("Sprint",IE_Released,this,&ASCharacter::SprintStop);
 }
 
 

@@ -30,7 +30,7 @@ void ASBlackholeProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	ForceComp->SetActive(false);
-	GetWorldTimerManager().SetTimer(TimerHandle_trigger,this,&ASBlackholeProjectile::SuckEvering,4.0f);
+	GetWorldTimerManager().SetTimer(TimerHandle_trigger,this,&ASBlackholeProjectile::SuckEvering,1.0f);
 }
 
 void ASBlackholeProjectile::Tick(float DeltaTime)
@@ -45,13 +45,12 @@ void ASBlackholeProjectile::SuckEvering()
 	{
 		Destroy();
 	};
-	GetWorldTimerManager().SetTimer(TimerHandle_destory,DestoryBlackHole,2.0f,false);
+	GetWorldTimerManager().SetTimer(TimerHandle_destory,DestoryBlackHole,4.0f,false);
 	
 }
 
 void ASBlackholeProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp,Warning,TEXT("12344444"));
 	OtherActor->Destroy();
 }
